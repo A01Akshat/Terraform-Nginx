@@ -38,6 +38,8 @@ resource "aws_key_pair" "deployer" {
   public_key = file("terra-key.pub")
 }
 
+//an Nginx reverse-proxy config that forwards requests from port 80 → 127.0.0.1:3000,
+
 
 resource "aws_instance" "node_nginx_app" {
   ami = "ami-052064a798f08f0d3"
@@ -47,7 +49,7 @@ resource "aws_instance" "node_nginx_app" {
 
    user_data = <<-EOF
               #!/bin/bash
-              yum update -y
+              yum update -y   
 
               # Install Node.js
               curl -sL https://rpm.nodesource.com/setup_16.x | bash -
@@ -116,3 +118,16 @@ resource "aws_instance" "node_nginx_app" {
     Name = "Terraform-NodeApp-Nginx"
   }
 }
+
+
+// In this project Nginx was not necessary, here it acts as REVERSE PROXY
+
+# Feature      	      With Nginx	                            Without Nginx
+# Access URL	      http://<EC2-IP>	                       http://<EC2-IP>:3000
+# Port exposure    	Only 80 open	                         3000 open to public
+# Security	        Safer (Node internal only)	           Node exposed directly
+# Performance      	High (Nginx handles concurrency)	     Limited by Node.js thread model
+# Load balancing	  Supported	                             Not possible
+# HTTPS setup	      Easy	                                 Manual/coded
+# Static files	    Served efficiently	                   Handled by Node
+# Real-world usage	Production best practice	             OK for testing/demo
